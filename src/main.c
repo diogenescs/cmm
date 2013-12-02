@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 size_t init_buffer(const char *filename, char **buffer)
 {
  
-  size_t buffer_size, temp;
+  size_t buffer_size, tmp;
   FILE *source_fp;
 
   struct stat fileinfo;
@@ -54,10 +54,10 @@ size_t init_buffer(const char *filename, char **buffer)
     exit(EXIT_FAILURE);
   }
 
-  temp = fread(*buffer, 1, buffer_size, source_fp);
+  tmp = fread(*buffer, 1, buffer_size, source_fp);
   fclose(source_fp);
 
-  if (temp < buffer_size)
+  if (tmp < buffer_size)
   {
     fprintf(stderr, "%s\n", "Error reading file");
     exit(EXIT_FAILURE);
