@@ -53,22 +53,21 @@ enum op_rel
 
 typedef struct token_ 
 {
-  
-  size_t lineno;
-  enum token_type type;
-  union
-  {
-    char *id_val;
-    int int_val;
-    float real_val;
-    char char_val;
-    char *str_val;
-    enum cmm_type cmm_type_val;
-    enum op_rel op_rel_val;
-  } value;
-
-  struct token_ *prev, *next;
-
+    size_t lineno;
+    enum token_type type;
+    union
+    {
+        char *id_val;
+        int int_val;
+        float real_val;
+        char char_val;
+        char *str_val;
+        enum cmm_type cmm_type_val;
+        enum op_rel op_rel_val;
+    } value;
+    
+    struct token_ *prev, *next;
+    
 } token_t;
 
 
