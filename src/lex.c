@@ -9,6 +9,7 @@ char *buffer;
 size_t buffer_size;
 size_t pos;
 size_t lineno;
+int initialized;
 
 token_t *cur_token;
 token_t *next_token;
@@ -28,7 +29,7 @@ char cmm_getc()
 
 token_t *get_token()
 {   
-    token_t *token;
+    token_t *token, *token_ret;
     char sym;
 
     token = (token_t *)malloc(sizeof(token_t));
@@ -103,8 +104,15 @@ token_t *get_token()
             fprintf(stderr, "unexpected char '%c'\n", sym);
         }
     }
-    cmm_debug_token(token);
-    return token;
+
+    if (!initialized)
+        return token;
+
+    token_ret = cur_token;
+    cur_token = next_token;
+    next_token = token;
+
+    return token_ret;
 }
 
 void init_lex(char *buf, size_t size)
@@ -113,11 +121,15 @@ void init_lex(char *buf, size_t size)
     buffer_size = size;
     pos = 0;
     lineno = 1;
+    cur_token = get_token();
+    next_token = get_token();
+    initialized = 1;
+
 }
 
 token_t *get_next_token()
 {
-    return next_token;
+    return cur_token;
 }
 
 
