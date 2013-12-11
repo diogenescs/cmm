@@ -3,6 +3,11 @@
 
 void start_parse(char *buffer, size_t buffer_size)
 {
+	token_t *token;
     init_lex(buffer, buffer_size);
-    get_token();
+    do
+    {
+    	token = get_token();
+    }
+    while (token->type != TOKEN_END);
 }

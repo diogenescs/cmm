@@ -6,9 +6,15 @@
 token_t *get_token();
 void cmm_ungetc();
 char cmm_getc();
-void token_str_classify(token_t *token, char *str, size_t n);
+void token_str_classify(token_t *token, char *str);
 void parse_comment();
-token_t *parse_str();
-token_t *parse_number();
+void parse_str(token_t *token);
+void parse_number(token_t *token);
+void parse_par(token_t *token);
+void parse_square_bracket(token_t *token);
+void parse_curly_bracket(token_t *token);
+void parse_collon(token_t *token);
+void parse_semicollon(token_t *token);
+void cmm_debug_token(token_t *token);
 
 #endif

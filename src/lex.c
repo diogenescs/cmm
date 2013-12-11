@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "token.h"
 #include "lex.h"
 
@@ -30,11 +31,21 @@ token_t *get_token()
     token_t *token;
     char sym;
 
+    token = (token_t *)malloc(sizeof(token_t));
+    if (!token)
+    {
+        perror("malloc : parse_str");
+        exit(EXIT_FAILURE);
+    }
+
     while(1)
     {
         sym = cmm_getc();
         if (sym == 0)
+        {
+            token->type = TOKEN_END;
             break;
+        }
 
         if (isblank(sym))
             continue;
@@ -44,18 +55,56 @@ token_t *get_token()
 
         else if (sym == '/')
             parse_comment();
+        
+        else if (sym == '(' || sym == ')')
+        {
+            parse_par(token);
+            break;
+        }
+
+        else if (sym == '[' || sym == ']')
+        {
+            parse_square_bracket(token);
+            break;
+        }
+
+        else if (sym == '{' || sym == '}')
+        {
+            parse_curly_bracket(token);
+            break;
+        }
+
+        else if (sym == ',')
+        {
+            parse_collon(token);
+            break;
+        }
+
+        else if (sym == ';')
+        {
+            parse_semicollon(token);
+            break;
+        }
 
         else if (isalpha(sym))
-            token = parse_str();
+        {
+            parse_str(token);
+            break;
+        }
 
         else if (isdigit(sym))
-            token = parse_number();
+        {
+            parse_number(token);
+            break;
+        }
 
         else 
         {
             fprintf(stderr, "unexpected char '%c'\n", sym);
         }
     }
+    cmm_debug_token(token);
+    return token;
 }
 
 void init_lex(char *buf, size_t size)
@@ -77,19 +126,11 @@ void parse_comment()
 
 }
 
-token_t *parse_str()
+void parse_str(token_t *token)
 {
-    token_t *token;
     char *init = buffer + (pos - 1);
     size_t n = 1;
     char sym;
-
-    token = (token_t *)malloc(sizeof(token_t));
-    if (!token)
-    {
-        perror("malloc : parse_str");
-        exit(EXIT_FAILURE);
-    }
     
     token->lineno = lineno;
 
@@ -100,16 +141,22 @@ token_t *parse_str()
         if (!isalnum(sym) && sym != '_')
         {
             cmm_ungetc();
-            token_str_classify(token, init, n - 1);
+            token->value.id_val = (char *)malloc(n);
+            if (!token->value.id_val)
+            {
+                perror("malloc");
+                exit(EXIT_FAILURE);
+            }
+            memset(token->value.id_val, 0, n);
+            strncpy(token->value.id_val, init, n-1);
+            token_str_classify(token, init);
             break;
         }
     }
-
-    return token;
 }
 
 
-void token_str_classify(token_t *token, char *str, size_t n)
+void token_str_classify(token_t *token, char *str)
 {
     int i, done = 0;    
     int vcmds[] = {TOKEN_CMD_IF, TOKEN_CMD_ELSE, TOKEN_CMD_WHILE, TOKEN_CMD_FOR, TOKEN_CMD_RETURN};
@@ -119,8 +166,9 @@ void token_str_classify(token_t *token, char *str, size_t n)
     char *types[] = {"char", "int", "real", "bool", "void"};
 
     for (i = 0; i < 5; i++)
-        if (!strncmp(str, cmds[i], n))
+        if (!strcmp(token->value.id_val, cmds[i]))
         {
+            free(token->value.id_val);
             token->type = vcmds[i];
             done = 1;
             break;
@@ -128,8 +176,9 @@ void token_str_classify(token_t *token, char *str, size_t n)
 
     if (!done)
         for (i = 0; i < 5; i++)
-            if (!strncmp(str, types[i], n))
+            if (!strcmp(token->value.id_val, types[i]))
             {
+                free(token->value.id_val);
                 token->type = TOKEN_CMM_TYPE;
                 token->value.cmm_type_val = vtypes[i];
                 done = 1;
@@ -145,7 +194,106 @@ void token_str_classify(token_t *token, char *str, size_t n)
 
 }
 
-token_t *parse_number()
+void parse_number(token_t *token)
 {
 
+}
+
+void parse_par(token_t *token)
+{
+    token->type = (buffer[pos-1] == '(') ? TOKEN_LPAR : TOKEN_RPAR;
+    token->lineno = lineno;       
+}
+
+void parse_square_bracket(token_t *token)
+{
+    token->type = (buffer[pos-1] == '[') ? TOKEN_LSQUARE_BRACKET : TOKEN_RSQUARE_BRACKET;
+    token->lineno = lineno;   
+}
+
+void parse_curly_bracket(token_t *token)
+{
+    token->type = (buffer[pos-1] == '{') ? TOKEN_LCURLY_BRACKET : TOKEN_RCURLY_BRACKET;
+    token->lineno = lineno;
+}
+
+void parse_collon(token_t *token)
+{
+    token->type = TOKEN_COLLON;
+    token->lineno = lineno;
+}
+
+void parse_semicollon(token_t *token)
+{
+    token->type = TOKEN_SEMICOLLON;
+    token->lineno = lineno;
+}
+
+
+
+void cmm_debug_token(token_t *token)
+{
+    if (!token)
+        return;
+
+    switch(token->type)
+    {
+        case TOKEN_ID: 
+        {
+            printf("<line: %lu, TOKEN_ID, \"%s\">\n", token->lineno, token->value.id_val);            
+        }
+        break;
+
+        case TOKEN_OP_REL:
+        {
+            printf("<line: %lu, TOKEN_OP_REL, ", token->lineno);
+            switch(token->value.op_rel_val)
+            {
+                case OP_REL_EQU: printf("OP_REL_EQU>\n"); break;
+                case OP_REL_NEQU: printf("OP_REL_NEQU>\n"); break;
+                case OP_REL_LT: printf("OP_REL_LT>\n"); break;
+                case OP_REL_LTE: printf("OP_REL_LTE>\n"); break;
+                case OP_REL_GT: printf("OP_REL_GT>\n"); break;
+                case OP_REL_GTE: printf("OP_REL_GTE>\n"); break;
+            }
+        }
+        break;
+
+        case TOKEN_CMM_TYPE:
+        {
+            printf("<line: %lu, TOKEN_CMM_TYPE, ", token->lineno);
+            switch(token->value.cmm_type_val)
+            {
+                case CMM_TYPE_CHAR: printf("CMM_TYPE_CHAR>\n"); break;
+                case CMM_TYPE_INT: printf("CMM_TYPE_INT>\n"); break;
+                case CMM_TYPE_REAL: printf("CMM_TYPE_REAL>\n"); break;
+                case CMM_TYPE_BOOL: printf("CMM_TYPE_BOOL>\n"); break;
+                case CMM_TYPE_VOID: printf("CMM_TYPE_VOID>\n"); break;
+            }
+        }
+        break;
+
+        case TOKEN_LPAR: printf("<line: %lu, TOKEN_LPAR, '('>\n", token->lineno); break;
+        case TOKEN_RPAR: printf("<line: %lu, TOKEN_LPAR, ')'>\n", token->lineno); break;
+        case TOKEN_LSQUARE_BRACKET: printf("<line: %lu, TOKEN_LSQUARE_BRACKET, '['>\n", token->lineno); break;
+        case TOKEN_RSQUARE_BRACKET: printf("<line: %lu, TOKEN_RSQUARE_BRACKET, ']'>\n", token->lineno); break;
+        case TOKEN_LCURLY_BRACKET: printf("<line: %lu, TOKEN_LCURLY_BRACKET, '{'>\n", token->lineno); break;
+        case TOKEN_RCURLY_BRACKET: printf("<line: %lu, TOKEN_RCURLY_BRACKET, '}'>\n", token->lineno); break;
+        case TOKEN_COLLON: printf("<line: %lu, TOKEN_COLLON, ','>\n", token->lineno); break;
+        case TOKEN_SEMICOLLON: printf("<line: %lu, TOKEN_SEMICOLLON, ';'>\n",token->lineno); break;
+        case TOKEN_UNARY_NEG_OP: printf("<line: %lu, TOKEN_UNARY_NEG_OP, '!'>\n", token->lineno); break;
+        case TOKEN_CMD_IF: printf("<line: %lu, TOKEN_CMD_IF, \"if\">\n", token->lineno); break;
+        case TOKEN_CMD_ELSE: printf("<line: %lu, TOKEN_CMD_ELSE, \"else\">\n", token->lineno); break;
+        case TOKEN_CMD_WHILE: printf("<line: %lu, TOKEN_CMD_WHILE, \"while\">\n", token->lineno); break;
+        case TOKEN_CMD_FOR: printf("<line: %lu, TOKEN_CMD_FOR, \"while\">\n", token->lineno); break;
+        case TOKEN_CMD_RETURN: printf("<line: %lu, TOKEN_CMD_RETURN, \"return\">\n", token->lineno); break;
+        case TOKEN_PLUS_SIGN: printf("<line: %lu, TOKEN_PLUS_SIGN, '+'>\n", token->lineno); break;
+        case TOKEN_MINUS_SIGN: printf("<line: %lu, TOKEN_MINUS_SIGN, '-'>\n", token->lineno); break;
+        case TOKEN_MUL_SIGN: printf("<line: %lu, TOKEN_MUL_SIGN, '*'>\n", token->lineno); break;
+        case TOKEN_DIV_SIGN: printf("<line: %lu, TOKEN_DIV_SIGN, '/'>\n", token->lineno); break;
+        case TOKEN_LOGICAL_AND: printf("<line: %lu, TOKEN_LOGICAL_AND, \"&&\">\n", token->lineno); break;
+        case TOKEN_LOGICAL_OR: printf("<line: %lu, TOKEN_LOGICAL_OR, \"||\">\n", token->lineno); break;
+        case TOKEN_ATTRIB_OP: printf("<line: %lu, TOKEN_ATTRIB_OP, '='>\n", token->lineno); break;
+
+    }
 }
