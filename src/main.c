@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "main.h"
+#include "token.h"
+#include "front_end.h"
 
 
 int main(int argc, char **argv)
@@ -19,6 +21,7 @@ int main(int argc, char **argv)
     }
 
     buffer_size = init_buffer(argv[1], &buffer);
+    start_parse(buffer, buffer_size);
 
     exit(EXIT_SUCCESS);
 }

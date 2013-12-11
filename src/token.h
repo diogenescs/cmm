@@ -6,7 +6,7 @@
 enum token_type
 {
     TOKEN_ID,
-    TOKEN_OP_REL,// == | != | < | <= | > | >=
+    TOKEN_OP_REL, // == | != | < | <= | > | >=
     TOKEN_CMM_TYPE, // char |  int  | real | bool | void
     TOKEN_LPAR, // '('
     TOKEN_RPAR, // ')'
@@ -28,16 +28,17 @@ enum token_type
     TOKEN_DIV_SIGN, // '/'
     TOKEN_LOGICAL_AND, // && 
     TOKEN_LOGICAL_OR, // ||
-    TOKEN_ATTRIB_OP // '='
+    TOKEN_ATTRIB_OP, // '='
+    TOKEN_END
 };
 
 enum cmm_type
 {
-    CMM_CHAR,
-    CMM_INT,
-    CMM_REAL,
-    CMM_BOOL,
-    CMM_VOID
+    CMM_TYPE_CHAR,
+    CMM_TYPE_INT,
+    CMM_TYPE_REAL,
+    CMM_TYPE_BOOL,
+    CMM_TYPE_VOID
 };
 
 enum op_rel
