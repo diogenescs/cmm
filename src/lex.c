@@ -53,7 +53,7 @@ token_t *get_token()
 
         else 
         {
-            fprintf(stderr, "unexpected char '%c'", sym);
+            fprintf(stderr, "unexpected char '%c'\n", sym);
         }
     }
 }
