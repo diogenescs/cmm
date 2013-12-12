@@ -209,11 +209,65 @@ void token_str_classify(token_t *token, char *str)
         // TODO: store lexema
     }
 
-
 }
 
 void parse_number(token_t *token)
 {
+    char sym;
+    char *str;
+    size_t n = 1;
+    char *init = buffer + (pos - 1);
+
+    token->type = TOKEN_INT_CONST;
+    token->lineno = lineno;
+
+    while(1)
+    {
+        sym = cmm_getc();
+        n++;
+        if (!isdigit(sym))
+        {
+            cmm_ungetc();
+            break;
+        }
+    }
+
+    sym = cmm_getc();
+    if (sym == '.')
+    {
+        token->type = TOKEN_REAL_CONST;    
+        while(1)
+        {
+            sym = cmm_getc();
+            n++;
+            if (!isdigit(sym))
+            {
+                cmm_ungetc();
+                n--;
+                break;
+            }
+        }
+    }
+    else
+    {
+        cmm_ungetc();
+        n--;
+    }
+
+    str = (char *)malloc(n);
+    if (!str)
+    {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    memset(str, 0, n);
+    strncpy(str, init, n);
+    //printf("[%s]\n", str);
+
+    if (token->type == TOKEN_INT_CONST)
+        token->value.int_val = atoi(str);
+    else
+        token->value.real_val = atof(str);
 
 }
 
@@ -321,6 +375,30 @@ void cmm_debug_token(token_t *token)
                 case OP_REL_GT: printf("OP_REL_GT>\n"); break;
                 case OP_REL_GTE: printf("OP_REL_GTE>\n"); break;
             }
+        }
+        break;
+
+        case TOKEN_INT_CONST:
+        {
+            printf("<line: %lu, TOKEN_INT_CONST, %d>\n", token->lineno, token->value.int_val);
+        }
+        break;
+
+        case TOKEN_REAL_CONST:
+        {
+            printf("<line: %lu, TOKEN_REAL_CONST, %f>\n", token->lineno, token->value.real_val);
+        }
+        break;
+
+        case TOKEN_CHAR_CONST:
+        {
+            printf("<line: %lu, TOKEN_CHAR_CONST, char(%02x)>\n", token->lineno, token->value.char_val);
+        }
+        break;
+
+        case TOKEN_STR_CONST:
+        {
+            printf("<line: %lu, TOKEN_STR_CONST, %s>\n", token->lineno, token->value.str_val);
         }
         break;
 

@@ -6,6 +6,10 @@
 enum token_type
 {
     TOKEN_ID,
+    TOKEN_INT_CONST,
+    TOKEN_REAL_CONST,
+    TOKEN_CHAR_CONST,
+    TOKEN_STR_CONST,
     TOKEN_OP_REL, // == | != | < | <= | > | >=
     TOKEN_CMM_TYPE, // char |  int  | real | bool | void
     TOKEN_LPAR, // '('
