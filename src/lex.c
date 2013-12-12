@@ -75,6 +75,12 @@ token_t *get_token()
             break;
         }
 
+        else if (sym == '<' || sym == '>' || sym == '=' || sym == '!')
+        {
+            parse_op_rel(token);
+            break;
+        }
+
         else if (sym == ',')
         {
             parse_collon(token);
@@ -241,7 +247,54 @@ void parse_semicollon(token_t *token)
     token->lineno = lineno;
 }
 
+void parse_op_rel(token_t *token)
+{
+    token->type = TOKEN_OP_REL;
+    token->lineno = lineno;
 
+    char prev_sym = buffer[pos-1];
+    char sym = cmm_getc();
+    if (prev_sym == '<')
+    {
+        if (sym == '=')
+            token->value.op_rel_val = OP_REL_LTE;
+        else
+        {
+            token->value.op_rel_val = OP_REL_LT;
+            cmm_ungetc();
+        }
+    }
+    else if (prev_sym == '>')
+    {
+        if (sym == '=')
+            token->value.op_rel_val = OP_REL_GTE;
+        else
+        {
+            token->value.op_rel_val = OP_REL_GT;
+            cmm_ungetc();
+        }
+    }
+
+    else if (prev_sym == '=')
+    {
+        if (sym == '=')
+            token->value.op_rel_val = OP_REL_EQU;
+        else
+        {
+            token->type = TOKEN_ATTRIB_OP;
+            cmm_ungetc();
+        }
+    }
+    else if (prev_sym == '!')
+    {
+        if (sym == '=')
+            token->value.op_rel_val = OP_REL_NEQU;
+        else
+        {
+            token->type = TOKEN_UNARY_NEG_OP;
+        }
+    }
+}
 
 void cmm_debug_token(token_t *token)
 {

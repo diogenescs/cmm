@@ -15,6 +15,7 @@ void parse_square_bracket(token_t *token);
 void parse_curly_bracket(token_t *token);
 void parse_collon(token_t *token);
 void parse_semicollon(token_t *token);
+void parse_op_rel(token_t *token);
 void cmm_debug_token(token_t *token);
 
 #endif
