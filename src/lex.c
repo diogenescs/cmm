@@ -286,7 +286,7 @@ void cmm_debug_token(token_t *token)
         break;
 
         case TOKEN_LPAR: printf("<line: %lu, TOKEN_LPAR, '('>\n", token->lineno); break;
-        case TOKEN_RPAR: printf("<line: %lu, TOKEN_LPAR, ')'>\n", token->lineno); break;
+        case TOKEN_RPAR: printf("<line: %lu, TOKEN_RPAR, ')'>\n", token->lineno); break;
         case TOKEN_LSQUARE_BRACKET: printf("<line: %lu, TOKEN_LSQUARE_BRACKET, '['>\n", token->lineno); break;
         case TOKEN_RSQUARE_BRACKET: printf("<line: %lu, TOKEN_RSQUARE_BRACKET, ']'>\n", token->lineno); break;
         case TOKEN_LCURLY_BRACKET: printf("<line: %lu, TOKEN_LCURLY_BRACKET, '{'>\n", token->lineno); break;
