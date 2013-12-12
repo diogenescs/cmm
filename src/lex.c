@@ -318,6 +318,8 @@ void parse_number(token_t *token)
     else
         token->value.real_val = atof(str);
 
+    free(str);
+
 }
 
 void parse_par(token_t *token)
