@@ -105,9 +105,31 @@ token_t *get_token()
             break;
         }
 
-        else 
+        else if (sym == '&')
         {
-            fprintf(stderr, "unexpected char '%c'\n", sym);
+            parse_logical_and(token);
+            if (token->type == TOKEN_UNEXPECTED)
+            {
+                fprintf(stderr, "unexpected char '%c' at line %lu\n", buffer[pos-1], lineno);
+                continue;
+            }
+            break;
+        }
+
+        else if (sym == '|')
+        {
+            parse_logical_or(token);
+            if (token->type == TOKEN_UNEXPECTED)
+            {
+                fprintf(stderr, "unexpected char '%c' at line %lu\n", buffer[pos-1], lineno);
+                continue;
+            }
+            break;
+        }
+
+        else
+        {
+            fprintf(stderr, "unexpected char '%c' at line %lu\n", sym, lineno);
         }
     }
 
@@ -142,6 +164,33 @@ token_t *get_next_token()
 void parse_comment()
 {
 
+}
+
+void parse_logical_and(token_t *token)
+{
+    char sym = cmm_getc();
+    token->lineno = lineno;
+    if (sym == '&')
+        token->type = TOKEN_LOGICAL_AND;
+    else
+    {
+        token->type = TOKEN_UNEXPECTED;
+        cmm_ungetc();
+    }
+}
+
+
+void parse_logical_or(token_t *token)
+{
+    char sym = cmm_getc();
+    token->lineno = lineno;
+    if (sym == '|')
+        token->type = TOKEN_LOGICAL_OR;
+    else
+    {
+        token->type = TOKEN_UNEXPECTED;
+        cmm_ungetc();
+    }
 }
 
 void parse_str(token_t *token)

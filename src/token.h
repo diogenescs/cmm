@@ -33,6 +33,7 @@ enum token_type
     TOKEN_LOGICAL_AND, // && 
     TOKEN_LOGICAL_OR, // ||
     TOKEN_ATTRIB_OP, // '='
+    TOKEN_UNEXPECTED,
     TOKEN_END
 };
 
